@@ -1,7 +1,10 @@
 #include "AGDataManager.h"
 
 AGDataManager::AGDataManager() {
+    Serial.println("AGDataManager created");
+    packages.clear();
     mux.begin();
+    dht = Bonezegei_DHT22(DHT_PIN);
     dht.begin();
 }
 
@@ -40,17 +43,25 @@ int AGDataManager::getPackagesAmount() {
 }
 
 void AGDataManager::packDHT(AGDataPackage& package) {
+    dht.getData();
     package.temperature = dht.getTemperature();
     package.airHumidity = dht.getHumidity();
+    Serial.println("Temperature: " + String(package.temperature));
+    Serial.println("Humidity: " + String(package.airHumidity));
 }
 
 void AGDataManager::packDirtHumidity(AGDataPackage& package) {
-    mux.setForDHT();
-    package.dirtHumidity = analogRead(ANALOG_PIN) / 1024.f;
+    mux.setForDirt();
+    float value = analogRead(ANALOG_PIN);
+    package.dirtHumidity = value / 1024.f;
+    Serial.println("Dirt humidity: " + String(analogRead(ANALOG_PIN) / 1024.f));
 }
 
 void AGDataManager::packVoltage(AGDataPackage& package) {
     mux.setForVoltage();
-    package.voltage = analogRead(ANALOG_PIN) / 1024.f;
+    float value = analogRead(ANALOG_PIN);
+    package.voltage = (((value * 3.7) / 1024) * 2 + 0);
     package.batteryPercentage = mapFloat(package.voltage, 2.8, 4.15, 0, 100);
+    Serial.println("Voltage: " + String(package.voltage));
+    Serial.println("Battery percentage: " + String(package.batteryPercentage));
 }

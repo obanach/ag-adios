@@ -1,5 +1,6 @@
 // AGModuleConnection.cpp
 #include "AGModuleConnection.h"
+#include "AGModuleInfo/AGModuleInfo.h"
 
 AGModuleConnection* AGModuleConnection::instance = nullptr;
 
@@ -66,23 +67,36 @@ void AGModuleConnection::initEspNow() {
 
 void AGModuleConnection::OnDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t len) {
     Serial.println("Data received: " + String((char*)incomingData) + " (" + String(len) + " bytes)");
+    bool messageFromHub = instance->hubMacAddress == macToString(mac);
+    bool emptyHubMacAddress = instance->hubMacAddress == "";
     if (!instance) return;
-    if (String((char*)incomingData) == "DISCOVER") {
+    if (String((char*)incomingData) == "DISCOVER" && (emptyHubMacAddress || messageFromHub)) {
         Serial.println("Discovery request received");
-        instance->sendMessage("ESP8266_HERE", macToString(mac));
-    } else if(String((char*)incomingData) == "PAIR") {
+        AGModuleInfo moduleInfo;
+        instance->sendMessage("MODULE" + moduleInfo.toString(), macToString(mac));
+    } else if(String((char*)incomingData) == "PAIR" && (emptyHubMacAddress || messageFromHub)) {
         Serial.println("Pairing request received.");
-        if(instance->hubMacAddress == "" || instance->hubMacAddress == macToString(mac)) {
+        if(emptyHubMacAddress || messageFromHub) {
             Serial.println("No hub MAC address found in EEPROM or message comes from the same device. Request accepted.");
             writeMacAddressToEEPROM(macToString(mac));
             instance->hubMacAddress = readMacAddressFromEEPROM();
             Serial.println("Hub MAC address saved to EEPROM: " + instance->hubMacAddress);
-            instance->sendMessage("PAIR_OK", macToString(mac));
+            AGModuleInfo moduleInfo;
+            instance->sendMessage("PAIR_OK" + moduleInfo.toString(), macToString(mac));
         } else {
             Serial.println("Hub MAC address found in EEPROM. Request rejected.");
             instance->sendMessage("PAIR_KO", macToString(mac));
         }
-    } else if(String((char*)incomingData) == "PACKAGE_SEND") {
+    } else if(String((char*)incomingData) == "UNPAIR" && messageFromHub) {
+        Serial.println("Unpairing request received.");
+        writeMacAddressToEEPROM("");
+        instance->hubMacAddress = "";
+        Serial.println("Hub MAC address removed from EEPROM.");
+        instance->sendMessage("UNPAIR_OK", macToString(mac));
+    } else if(String((char*)incomingData) == "UNPAIR") {
+        Serial.println("Unpairing request received, but not from the saved hub.");
+        instance->sendMessage("UNPAIR_OK", macToString(mac));
+    } else if(String((char*)incomingData) == "PACKAGE_SEND" && messageFromHub) {
         Serial.println("Package request received.");
         instance->fetchAndSendPackage();
     } else {

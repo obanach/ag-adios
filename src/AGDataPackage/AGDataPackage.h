@@ -10,8 +10,8 @@ public:
     AGDataPackage();
     time_t timestamp;
     float temperature;
-    int airHumidity;
-    int dirtHumidity;
+    float airHumidity;
+    float dirtHumidity;
     float voltage;
     float batteryPercentage;
     String toJSON();

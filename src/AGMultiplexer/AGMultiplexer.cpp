@@ -1,5 +1,9 @@
 #include "AGMultiplexer.h"
 
+#define MUX_A D5
+#define MUX_B D6
+#define MUX_C D7
+
 AGMultiplexer::AGMultiplexer() {
     begin();
 }
@@ -13,10 +17,10 @@ void AGMultiplexer::begin() {
 void AGMultiplexer::write(int c, int b, int a) {
     digitalWrite(MUX_A, a);
     digitalWrite(MUX_B, b);
-    digitalWrite(MUX_B, c);
+    digitalWrite(MUX_C, c);
 }
 
-void AGMultiplexer::setForDHT() { // Channel 1
+void AGMultiplexer::setForDirt() { // Channel 1
     write(LOW, LOW, HIGH);
 }
 
