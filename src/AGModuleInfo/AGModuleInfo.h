@@ -15,6 +15,7 @@ public:
     uint8_t macAddress[6];
 
     String toString();
+    operator String();
 };
 
 #endif // AG_MODULE_INFO_H

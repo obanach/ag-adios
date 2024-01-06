@@ -25,3 +25,7 @@ String AGModuleInfo::toString() {
     }
     return moduleStr;
 }
+
+AGModuleInfo::operator String() {
+    return toString();
+}
