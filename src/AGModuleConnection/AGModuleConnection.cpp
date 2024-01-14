@@ -94,7 +94,9 @@ void AGModuleConnection::OnDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t
             writeMacAddressToEEPROM(macToString(mac));
             instance->hubMacAddress = readMacAddressFromEEPROM();
             Serial.println("Hub MAC address saved to EEPROM: " + instance->hubMacAddress);
-            instance->sendMessage(AGPacket("PAIR_OK"), macToString(mac));
+            AGModuleInfo moduleInfo;
+            AGPacket response("PAIR_OK", moduleInfo);
+            instance->sendMessage(response, macToString(mac));
         } else {
             Serial.println("Hub MAC address found in EEPROM. Request rejected.");
             instance->sendMessage(AGPacket("PAIR_KO"), macToString(mac));
