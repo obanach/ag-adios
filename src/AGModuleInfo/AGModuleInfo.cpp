@@ -14,7 +14,7 @@ AGModuleInfo::AGModuleInfo() {
         name += String(hexStr);
     }
     
-    type = "ESP8266";
+    type = "environment";
 }
 
 String AGModuleInfo::toString() {

@@ -99,17 +99,18 @@ void AGModuleConnection::OnDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t
             instance->sendMessage(response, macToString(mac));
         } else {
             Serial.println("Hub MAC address found in EEPROM. Request rejected.");
-            instance->sendMessage(AGPacket("PAIR_KO"), macToString(mac));
+            AGModuleInfo moduleInfo;
+            AGPacket response("PAIR_KO", moduleInfo);
+            instance->sendMessage(response, macToString(mac));
         }
-    } else if(packet.header == "UNPAIR" && messageFromHub) {
+    } else if(packet.header == "UNPAIR") {
         Serial.println("Unpairing request received.");
         writeMacAddressToEEPROM("");
         instance->hubMacAddress = "";
         Serial.println("Hub MAC address removed from EEPROM.");
-        instance->sendMessage(AGPacket("UNPAIR_OK"), macToString(mac));
-    } else if(packet.header == "UNPAIR") {
-        Serial.println("Unpairing request received, but not from the saved hub.");
-        instance->sendMessage(AGPacket("UNPAIR_OK"), macToString(mac));
+        AGModuleInfo moduleInfo;
+        AGPacket response("UNPAIR_OK", moduleInfo);
+        instance->sendMessage(response, macToString(mac));
     } else if(packet.header == "PACKAGE_SEND" && messageFromHub) {
         Serial.println("Package request received.");
         instance->fetchAndSendPackage();
